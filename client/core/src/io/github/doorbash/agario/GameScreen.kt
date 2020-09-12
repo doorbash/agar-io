@@ -270,7 +270,7 @@ class GameScreen(val game: Game) : KtxScreen {
             player.position.y = player.y
             player._color = Color(player.color)
             player._strokeColor = Color(player.color)
-            player._strokeColor.mul(0.9f)
+            player._strokeColor?.mul(0.9f)
         }
         room.state.players.onRemove = label@{ player, key ->
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label

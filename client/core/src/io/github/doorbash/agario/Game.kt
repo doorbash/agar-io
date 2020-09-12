@@ -1,7 +1,5 @@
 package io.github.doorbash.agario
 
-import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import ktx.app.KtxGame
 import ktx.app.KtxScreen
 
