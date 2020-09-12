@@ -119,7 +119,7 @@ project(":core") {
         api "io.github.libktx:ktx-graphics:$ktxVersion"
         api "io.github.libktx:ktx-inject:$ktxVersion"
         api "io.github.libktx:ktx-log:$ktxVersion"
-        api 'ir.doorbash:colyseus-java:2.4.3'
+        api 'ir.doorbash:colyseus-kotlin:2.4.3'
     }
 
     compileKotlin {
