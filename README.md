@@ -1,5 +1,5 @@
 **Client:** 
-[LibKTX](https://libktx.github.io/) + [Colyseus client for Kotlin](https://github.com/doorbash/colyseus-kotlin)
+[LibKTX](https://libktx.github.io/) + [Colyseus-Kotlin](https://github.com/doorbash/colyseus-kotlin)
 
 **Server:** 
 [Colyseus](https://github.com/colyseus/colyseus)
