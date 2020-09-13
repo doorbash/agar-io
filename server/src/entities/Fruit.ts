@@ -1,6 +1,9 @@
 import { Schema, type } from "@colyseus/schema";
 
 class Fruit extends Schema {
+    @type("string")
+    key: string;
+
     @type("float32")
     x: number;
 

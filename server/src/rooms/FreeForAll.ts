@@ -8,7 +8,7 @@ import Constants from "../util/Constants";
 class FreeForAll extends Room {
 
     maxClients = 20;
-    autoDispose = true;
+    autoDispose = false;
     fruitId = 0;
 
     onCreate?(options: any): void {
@@ -20,6 +20,18 @@ class FreeForAll extends Room {
         this.setSimulationInterval(() => {
             this.updateWorld();
         }, Constants.WORLD_UPDATE_INTERVAL);
+
+        this.onMessage("angle", (client, angle) => {
+            // console.log("Received angle from", client.id, ":", angle);
+            var player = this.state.players[client.id];
+            player.angle = angle * 0.0174533;
+        });
+
+        this.onMessage("ping", (client, pong) => {
+            // console.log("Received ping from", client.id);
+            client.send("ping", "pong");
+        });
+
     }
 
     onAuth(client: Client, options: any, request?: IncomingMessage): any | Promise<any> {
@@ -37,19 +49,6 @@ class FreeForAll extends Room {
             player.online = true;
             this.state.players[client.id] = player;
             console.log("new player added " + client.id);
-        }
-    }
-
-    onMessage(client: Client, data: any): void {
-        console.log("Room received message from", client.id, ":", data);
-        var player = this.state.players[client.id];
-        switch (data.op) {
-            case 'angle': {
-                player.angle = data.angle * 0.0174533;
-            } break;
-            case 'ping': {
-                this.send(client, 'pong');
-            } break;
         }
     }
 
@@ -109,10 +108,15 @@ class FreeForAll extends Room {
 
     eat(player, fruitKey) {
         delete this.state.fruits[fruitKey];
+        console.log("removed fruits[" + fruitKey + "] current size = " + Object.keys(this.state.fruits).length)
+
+        // Object.keys(this.state.fruits).forEach(key => console.log(" >>> " + key))
+
         player.radius += Constants.FRUIT_RADIUS / 10;
         var newSpeed = player.speed - Constants.FRUIT_RADIUS / 30;
         if (newSpeed > Constants.PLAYER_MIN_SPEED) player.speed = newSpeed;
-        console.log('yum yum yummm');
+        // console.log('yum yum yummm');
+
         this.generateFruit();
     }
 
@@ -122,7 +126,9 @@ class FreeForAll extends Room {
         fr.y = Constants.FRUIT_RADIUS + Math.random() * (1200 - 2 * Constants.FRUIT_RADIUS);
         fr.color = Constants.FRUIT_COLORS[Math.floor(Math.random() * Constants.FRUIT_COLORS.length)];
         var key = "fr_" + (this.fruitId++);
+        fr.key = key
         this.state.fruits[key] = fr;
+        console.log("added fruits[" + key + "] " + " current size = " + Object.keys(this.state.fruits).length)
     }
 
     checkIfPlayerIsEatingAnotherPlayer(clientId, player) {
