@@ -268,7 +268,7 @@ class GameScreen(val game: Game) : KtxScreen {
             connectionState = CONNECTION_STATE_DISCONNECTED
             println("onError()")
             println(message)
-            room.serializer.schemaPrint()
+//            room.serializer.schemaPrint()
         }
         room.onMessage("ping") { message: String ->
             lastPingReplyTime = System.currentTimeMillis()
