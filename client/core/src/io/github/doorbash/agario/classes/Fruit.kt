@@ -14,13 +14,16 @@ import io.colyseus.serializer.schema.Schema
 
 @SchemaClass
 class Fruit : Schema() {
-    @SchemaField("0/float32")
-    var x = 0f
+    @SchemaField("0/string")
+    var key:String? = null
 
     @SchemaField("1/float32")
+    var x = 0f
+
+    @SchemaField("2/float32")
     var y = 0f
 
-    @SchemaField("2/int32")
+    @SchemaField("3/int32")
     var color = 0
     var position = Vector2()
     var _color: Color? = null
