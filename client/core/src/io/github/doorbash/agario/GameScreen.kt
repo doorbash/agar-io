@@ -15,8 +15,9 @@ import io.colyseus.Room
 import io.github.doorbash.agario.classes.Fruit
 import io.github.doorbash.agario.classes.GameState
 import io.github.doorbash.agario.classes.Player
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import ktx.app.KtxScreen
+import java.lang.Exception
 import java.util.*
 
 class GameScreen(val game: Game) : KtxScreen {
@@ -42,6 +43,7 @@ class GameScreen(val game: Game) : KtxScreen {
     private var room: Room<GameState>? = null
     private val fruits: HashMap<String, Fruit> = HashMap()
     private val players: HashMap<String, Player> = HashMap()
+    private var connectToServerJob: Job? = null
 
     /* *************************************** OVERRIDE *****************************************/
     init {
@@ -98,6 +100,7 @@ class GameScreen(val game: Game) : KtxScreen {
         if (shapeRenderer != null) shapeRenderer!!.dispose()
         if (freetypeGeneratorNoto != null) freetypeGeneratorNoto!!.dispose()
         if (room != null) room!!.leave()
+        connectToServerJob?.cancel()
     }
 
     override fun resize(width: Int, height: Int) {
@@ -220,19 +223,28 @@ class GameScreen(val game: Game) : KtxScreen {
             connectionState = CONNECTION_STATE_DISCONNECTED
         }
         if (connectionState == CONNECTION_STATE_DISCONNECTED) {
-            connectToServer()
+            connectToServerJob = connectToServer()
         }
     }
 
-    private fun connectToServer() = runBlocking {
-        println("connectToServer()")
-        if (connectionState != CONNECTION_STATE_DISCONNECTED) return@runBlocking
-        connectionState = CONNECTION_STATE_CONNECTING
-        val client = Client(ENDPOINT)
-        if (sessionId == null) {
-            updateRoom(client.joinOrCreate("ffa", GameState::class.java))
-        } else {
-            updateRoom(client.reconnect(roomId!!, GameState::class.java, sessionId!!))
+    private fun connectToServer(): Job {
+        return GlobalScope.launch {
+            tailrec suspend fun connect() {
+                println("connectToServer()")
+                if (connectionState != CONNECTION_STATE_DISCONNECTED)
+                    connectionState = CONNECTION_STATE_CONNECTING
+                val client = Client(ENDPOINT)
+                if (sessionId == null) {
+                    updateRoom(client.joinOrCreate("ffa", GameState::class.java))
+                } else {
+                    updateRoom(client.reconnect(roomId!!, GameState::class.java, sessionId!!))
+                }
+                if (room == null) {
+                    delay(3000)
+                    connect()
+                }
+            }
+            connect()
         }
     }
 
@@ -256,6 +268,7 @@ class GameScreen(val game: Game) : KtxScreen {
             connectionState = CONNECTION_STATE_DISCONNECTED
             println("onError()")
             println(message)
+            room.serializer.schemaPrint()
         }
         room.onMessage("ping") { message: String ->
             lastPingReplyTime = System.currentTimeMillis()
@@ -277,6 +290,9 @@ class GameScreen(val game: Game) : KtxScreen {
             synchronized(players) { players.remove(key) }
         }
         room.state.fruits.onAdd = label@{ fruit, key ->
+            if(fruit.key != key) {
+                throw Exception("WTF " + fruit.key + " != " + key)
+            }
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             synchronized(fruits) { fruits.put(key, fruit) }
             //            System.out.println("new fruit added >> key: " + key);
@@ -285,6 +301,9 @@ class GameScreen(val game: Game) : KtxScreen {
             fruit._color = Color(fruit.color)
         }
         room.state.fruits.onRemove = label@{ fruit, key ->
+            if(fruit.key != key) {
+                throw Exception("WTF " + fruit.key + " != " + key)
+            }
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             synchronized(fruits) { fruits.remove(key) }
         }
