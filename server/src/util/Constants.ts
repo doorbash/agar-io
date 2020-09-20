@@ -14,7 +14,7 @@ class Constants {
     ];
 
     static WORLD_UPDATE_INTERVAL = 16; // ms
-    static INIT_FRUITS = 200;
+    static INIT_FRUITS = 50;
     static FRUIT_RADIUS = 10;
     static PLAYER_MIN_SPEED = 40;
     static PLAYER_INIT_SPEED = 120;

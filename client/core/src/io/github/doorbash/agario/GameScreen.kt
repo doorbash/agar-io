@@ -235,9 +235,9 @@ class GameScreen(val game: Game) : KtxScreen {
                     connectionState = CONNECTION_STATE_CONNECTING
                 val client = Client(ENDPOINT)
                 if (sessionId == null) {
-                    updateRoom(client.joinOrCreate("ffa", GameState::class.java))
+                    updateRoom(client.joinOrCreate(GameState::class.java, "ffa"))
                 } else {
-                    updateRoom(client.reconnect(roomId!!, GameState::class.java, sessionId!!))
+                    updateRoom(client.reconnect(GameState::class.java, roomId!!, sessionId!!))
                 }
                 if (room == null) {
                     delay(3000)
@@ -268,18 +268,17 @@ class GameScreen(val game: Game) : KtxScreen {
             connectionState = CONNECTION_STATE_DISCONNECTED
             println("onError()")
             println(message)
-//            room.serializer.schemaPrint()
         }
         room.onMessage("ping") { message: String ->
             lastPingReplyTime = System.currentTimeMillis()
             currentPing = lastPingReplyTime - lastPingSentTime
             calculateLerp(currentPing.toFloat())
         }
-        room.state.players.onAdd = onAdd@{ player: Player, key: String ->
+        room.state.players.onAdd = onAdd@{ player: Player?, key: String ->
             if (connectionState != CONNECTION_STATE_CONNECTED) return@onAdd
-            synchronized(players) { players.put(key, player) }
+            synchronized(players) { players.put(key, player!!) }
             //            System.out.println("new player added >> clientId: " + key);
-            player.position.x = player.x
+            player!!.position.x = player.x
             player.position.y = player.y
             player._color = Color(player.color)
             player._strokeColor = Color(player.color)
@@ -290,19 +289,21 @@ class GameScreen(val game: Game) : KtxScreen {
             synchronized(players) { players.remove(key) }
         }
         room.state.fruits.onAdd = label@{ fruit, key ->
-            if(fruit.key != key) {
-                throw Exception("WTF " + fruit.key + " != " + key)
-            }
+//            if (fruit!!.key != key) {
+//                println("WTF " + fruit.key + " != " + key)
+//            }
+            println("fruit added: $key")
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
-            synchronized(fruits) { fruits.put(key, fruit) }
+            synchronized(fruits) { fruits.put(key, fruit!!) }
             //            System.out.println("new fruit added >> key: " + key);
-            fruit.position.x = fruit.x
+            fruit!!.position.x = fruit.x
             fruit.position.y = fruit.y
             fruit._color = Color(fruit.color)
         }
         room.state.fruits.onRemove = label@{ fruit, key ->
-            if(fruit.key != key) {
-                throw Exception("WTF " + fruit.key + " != " + key)
+            println("fruit removed: $key")
+            if (fruit!!.key != key) {
+                println("WTF " + fruit.key + " != " + key)
             }
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             synchronized(fruits) { fruits.remove(key) }

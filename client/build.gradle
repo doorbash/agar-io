@@ -119,7 +119,10 @@ project(":core") {
         api "io.github.libktx:ktx-graphics:$ktxVersion"
         api "io.github.libktx:ktx-inject:$ktxVersion"
         api "io.github.libktx:ktx-log:$ktxVersion"
-        api 'ir.doorbash:colyseus-kotlin:2.4.3'
+
+        implementation 'org.java-websocket:Java-WebSocket:1.5.1'
+        implementation 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
+        implementation 'org.slf4j:slf4j-simple:1.6.2'
     }
 
     compileKotlin {

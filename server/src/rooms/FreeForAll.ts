@@ -77,9 +77,8 @@ class FreeForAll extends Room {
     }
 
     updateWorld() {
-        Object.keys(this.state.players).forEach(key => {
+        this.state.players.forEach((player, key) => {
             // update player position
-            var player = this.state.players[key];
             var newX = player.x + Math.cos(player.angle) * player.speed * Constants.WORLD_UPDATE_INTERVAL / 1000;
             var newY = player.y + Math.sin(player.angle) * player.speed * Constants.WORLD_UPDATE_INTERVAL / 1000;
             if ((newX - player.radius) < 0) newX = player.radius; else if ((newX + player.radius) > 1200) newX = 1200 - player.radius;
@@ -95,8 +94,7 @@ class FreeForAll extends Room {
 
     checkIfPlayerIsEatingFruit(player) {
         var eatenFruitKeys = [];
-        Object.keys(this.state.fruits).forEach(key => {
-            var fruit = this.state.fruits[key];
+        this.state.fruits.forEach((fruit, key) => {
             if ((Math.pow(fruit.x - player.x, 2) + Math.pow(fruit.y - player.y, 2)) < Math.pow(player.radius + Constants.FRUIT_RADIUS, 2)) {
                 eatenFruitKeys.push(key);
             }
@@ -106,9 +104,23 @@ class FreeForAll extends Room {
         });
     }
 
+     getMethods(obj) {
+        var result = [];
+        for (var id in obj) {
+          try {
+            if (typeof(obj[id]) == "function") {
+              result.push(id + ": " + obj[id].toString());
+            }
+          } catch (err) {
+            result.push(id + ": inaccessible");
+          }
+        }
+        return result;
+      }
+
     eat(player, fruitKey) {
-        delete this.state.fruits[fruitKey];
-        console.log("removed fruits[" + fruitKey + "] current size = " + Object.keys(this.state.fruits).length)
+        this.state.fruits.delete(fruitKey)
+        console.log("removed fruits[" + fruitKey + "] current size = " + this.state.fruits.siZe)
 
         // Object.keys(this.state.fruits).forEach(key => console.log(" >>> " + key))
 
@@ -127,8 +139,8 @@ class FreeForAll extends Room {
         fr.color = Constants.FRUIT_COLORS[Math.floor(Math.random() * Constants.FRUIT_COLORS.length)];
         var key = "fr_" + (this.fruitId++);
         fr.key = key
-        this.state.fruits[key] = fr;
-        console.log("added fruits[" + key + "] " + " current size = " + Object.keys(this.state.fruits).length)
+        this.state.fruits.set(key, fr);
+        console.log("added fruits[" + key + "] " + " current size = " + this.state.fruits.size)
     }
 
     checkIfPlayerIsEatingAnotherPlayer(clientId, player) {
