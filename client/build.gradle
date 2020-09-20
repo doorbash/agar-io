@@ -120,7 +120,7 @@ project(":core") {
         api "io.github.libktx:ktx-inject:$ktxVersion"
         api "io.github.libktx:ktx-log:$ktxVersion"
 
-        implementation 'io.github.doorbash:colyseus-kotlin:0.14.0'
+        implementation 'io.github.doorbash:colyseus-kotlin:0.14.0-alpha'
     }
 
     compileKotlin {
