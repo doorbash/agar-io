@@ -8,7 +8,7 @@ import io.colyseus.serializer.schema.Schema
 
 class Fruit : Schema() {
     @SchemaField("0/string")
-    var key:String? = String.default
+    var key = String.default
 
     @SchemaField("1/float32")
     var x = Float.default
