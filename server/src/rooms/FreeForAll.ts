@@ -144,9 +144,8 @@ class FreeForAll extends Room {
     }
 
     checkIfPlayerIsEatingAnotherPlayer(clientId, player) {
-        Object.keys(this.state.players).forEach(key => {
+        this.state.players.forEach((p , key) => {
             if (key == clientId) return;
-            var p = this.state.players[key];
             if (p.radius < player.radius && (Math.pow(p.x - player.x, 2) + Math.pow(p.y - player.y, 2)) < Math.pow(player.radius + p.radius, 2)) {
                 this.eatPlayer(player, p);
             }
