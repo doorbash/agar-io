@@ -22,13 +22,11 @@ class FreeForAll extends Room {
         }, Constants.WORLD_UPDATE_INTERVAL);
 
         this.onMessage("angle", (client, angle) => {
-            // console.log("Received angle from", client.id, ":", angle);
             var player = this.state.players[client.id];
             player.angle = angle * 0.0174533;
         });
 
         this.onMessage("ping", (client, pong) => {
-            // console.log("Received ping from", client.id);
             client.send("ping", "pong");
         });
 
@@ -86,7 +84,7 @@ class FreeForAll extends Room {
             player.x = newX;
             player.y = newY;
 
-            // check if player eat something
+            // check if player is eating something
             this.checkIfPlayerIsEatingFruit(player);
             this.checkIfPlayerIsEatingAnotherPlayer(key, player);
         });
@@ -104,31 +102,12 @@ class FreeForAll extends Room {
         });
     }
 
-     getMethods(obj) {
-        var result = [];
-        for (var id in obj) {
-          try {
-            if (typeof(obj[id]) == "function") {
-              result.push(id + ": " + obj[id].toString());
-            }
-          } catch (err) {
-            result.push(id + ": inaccessible");
-          }
-        }
-        return result;
-      }
-
     eat(player, fruitKey) {
         this.state.fruits.delete(fruitKey)
         console.log("removed fruits[" + fruitKey + "] current size = " + this.state.fruits.siZe)
-
-        // Object.keys(this.state.fruits).forEach(key => console.log(" >>> " + key))
-
         player.radius += Constants.FRUIT_RADIUS / 10;
         var newSpeed = player.speed - Constants.FRUIT_RADIUS / 30;
         if (newSpeed > Constants.PLAYER_MIN_SPEED) player.speed = newSpeed;
-        // console.log('yum yum yummm');
-
         this.generateFruit();
     }
 
@@ -144,7 +123,7 @@ class FreeForAll extends Room {
     }
 
     checkIfPlayerIsEatingAnotherPlayer(clientId, player) {
-        this.state.players.forEach((p , key) => {
+        this.state.players.forEach((p, key) => {
             if (key == clientId) return;
             if (p.radius < player.radius && (Math.pow(p.x - player.x, 2) + Math.pow(p.y - player.y, 2)) < Math.pow(player.radius + p.radius, 2)) {
                 this.eatPlayer(player, p);
