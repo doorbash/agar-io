@@ -8,7 +8,7 @@
     npm start
 ```
 
-2) Client :
+2) Client(s) :
 ```
     cd client
     ./gradlew :desktop:run
