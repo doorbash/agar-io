@@ -1,4 +1,4 @@
-<img src="https://github.com/doorbash/agar-io-ktx/blob/master/screenshot.png?raw=true" />
+![preview.gif](https://github.com/doorbash/agar-io-ktx/blob/master/preview.gif?raw=true)
 
 ## License
 
