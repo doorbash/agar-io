@@ -203,9 +203,9 @@ class GameScreen(val game: Game) : KtxScreen {
 
     private fun objectIsInViewport(player: Player?, x: Float, y: Float, radius: Float): Boolean {
         if (x + radius < player?.position?.x!! - camera!!.zoom * camera!!.viewportWidth / 2) return false
-        if (x - radius > player.position?.x!! + camera!!.zoom * camera!!.viewportWidth / 2) return false
-        if (y + radius < player.position?.y!! - camera!!.zoom * camera!!.viewportHeight / 2) return false
-        return if (y - radius > player.position.y + camera!!.zoom * camera!!.viewportHeight / 2) false else true
+        if (x - radius > player.position.x + camera!!.zoom * camera!!.viewportWidth / 2) return false
+        if (y + radius < player.position.y - camera!!.zoom * camera!!.viewportHeight / 2) return false
+        return y - radius <= player.position.y + camera!!.zoom * camera!!.viewportHeight / 2
     }
 
     private fun adjustCamera() {
@@ -289,9 +289,9 @@ class GameScreen(val game: Game) : KtxScreen {
             synchronized(players) { players.remove(key) }
         }
         room.state.fruits.onAdd = label@{ fruit, key ->
-//            if (fruit!!.key != key) {
-//                println("WTF " + fruit.key + " != " + key)
-//            }
+            if (fruit!!.key != key) {
+                println("WTF " + fruit.key + " != " + key)
+            }
             println("fruit added: $key")
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             synchronized(fruits) { fruits.put(key, fruit!!) }
