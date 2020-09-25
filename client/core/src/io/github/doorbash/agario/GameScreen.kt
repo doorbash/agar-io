@@ -12,12 +12,15 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.MathUtils
 import io.colyseus.Client
 import io.colyseus.Room
+import io.colyseus.serializer.schema.Schema
+import io.colyseus.serializer.schema.types.MapSchema
 import io.github.doorbash.agario.classes.Fruit
-import io.github.doorbash.agario.classes.GameState
 import io.github.doorbash.agario.classes.Player
-import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ktx.app.KtxScreen
-import java.lang.Exception
 import java.util.*
 
 class GameScreen(val game: Game) : KtxScreen {
@@ -40,10 +43,11 @@ class GameScreen(val game: Game) : KtxScreen {
     private var guiCamera: OrthographicCamera? = null
     private var freetypeGeneratorNoto: FreeTypeFontGenerator? = null
     private var logFont: BitmapFont? = null
-    private var room: Room<GameState>? = null
+    private var room: Room? = null
     private val fruits: HashMap<String, Fruit> = HashMap()
     private val players: HashMap<String, Player> = HashMap()
     private var connectToServerJob: Job? = null
+    private var thisPlayer: Player? = null
 
     /* *************************************** OVERRIDE *****************************************/
     init {
@@ -65,6 +69,11 @@ class GameScreen(val game: Game) : KtxScreen {
     override fun render(delta: Float) {
         Gdx.gl.glClearColor(0.98f, 0.99f, 1f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        if (thisPlayer == null) {
+            thisPlayer = synchronized(players) {
+                players[room?.sessionId]
+            }
+        }
         updatePositions()
         adjustCamera()
         if (connectionState == CONNECTION_STATE_CONNECTED) {
@@ -114,16 +123,17 @@ class GameScreen(val game: Game) : KtxScreen {
 
     /* ***************************************** DRAW *******************************************/
     private fun drawGrid() {
-        var player: Player? = null
+        if (room == null) return
+        if (thisPlayer == null) return
         var leftBottomX: Int
         var leftBottomY: Int
         val rightTopX: Int
         val rightTopY: Int
         val width = camera!!.zoom * camera!!.viewportWidth
         val height = camera!!.zoom * camera!!.viewportHeight
-        if (room != null && room!!.state.players.get(room!!.sessionId).also { player = it } != null) {
-            leftBottomX = (player!!.position.x - width / 2f).toInt()
-            leftBottomY = (player!!.position.y - height / 2f).toInt()
+        if (room != null && thisPlayer != null) {
+            leftBottomX = (thisPlayer!!.position.x - width / 2f).toInt()
+            leftBottomY = (thisPlayer!!.position.y - height / 2f).toInt()
         } else {
             leftBottomX = (-width / 2f).toInt()
             leftBottomY = (-height / 2f).toInt()
@@ -155,7 +165,7 @@ class GameScreen(val game: Game) : KtxScreen {
 
     private fun drawFruits() {
         if (room == null) return
-        val thisPlayer: Player = room!!.state.players.get(room!!.sessionId) ?: return
+        if (thisPlayer == null) return
         synchronized(fruits) {
             for (fr in fruits.values) {
                 if (fr._color == null) continue
@@ -168,15 +178,15 @@ class GameScreen(val game: Game) : KtxScreen {
 
     private fun drawPlayers() {
         if (room == null) return
-        val thisPlayer: Player = room!!.state.players.get(room!!.sessionId) ?: return
+        if (thisPlayer == null) return
         synchronized(players) {
             for ((clientId, value) in players) {
-                val player: Player = value ?: continue
+                val player: Player = value
                 if (clientId == room!!.sessionId || objectIsInViewport(thisPlayer, player.position.x, player.position.y, player.radius)) {
                     shapeRenderer!!.color = player._strokeColor
                     shapeRenderer!!.circle(player.position.x, player.position.y, player.radius)
                     shapeRenderer!!.color = player._color
-                    shapeRenderer!!.circle(player.position.x, player.position.y, player.radius - 3)
+                    shapeRenderer!!.circle(player.position.x, player.position.y, player.radius - 3f)
                 }
             }
         }
@@ -195,8 +205,14 @@ class GameScreen(val game: Game) : KtxScreen {
         if (room == null) return
         synchronized(players) {
             for ((clientId, value) in players) {
-                val player: Player = value ?: continue
-                if (clientId == room!!.sessionId) player.position.set(MathUtils.lerp(player.position.x, player.x, lerp), MathUtils.lerp(player.position.y, player.y, lerp)) else player.position.set(MathUtils.lerp(player.position.x, player.x, OTHER_PLAYERS_LERP), MathUtils.lerp(player.position.y, player.y, OTHER_PLAYERS_LERP))
+                val player: Player = value
+                if (clientId == room!!.sessionId) player.position.set(
+                        MathUtils.lerp(player.position.x, player.x, lerp),
+                        MathUtils.lerp(player.position.y, player.y, lerp)
+                ) else player.position.set(
+                        MathUtils.lerp(player.position.x, player.x, OTHER_PLAYERS_LERP),
+                        MathUtils.lerp(player.position.y, player.y, OTHER_PLAYERS_LERP)
+                )
             }
         }
     }
@@ -210,10 +226,10 @@ class GameScreen(val game: Game) : KtxScreen {
 
     private fun adjustCamera() {
         if (room == null) return
-        val player: Player = room!!.state.players.get(room!!.sessionId) ?: return
-        camera!!.position.x = player.position.x
-        camera!!.position.y = player.position.y
-        camera!!.zoom = player.radius / 60f
+        if (thisPlayer == null) return
+        camera!!.position.x = thisPlayer!!.position.x
+        camera!!.position.y = thisPlayer!!.position.y
+        camera!!.zoom = thisPlayer!!.radius / 60f
         camera!!.update()
     }
 
@@ -235,9 +251,9 @@ class GameScreen(val game: Game) : KtxScreen {
                     connectionState = CONNECTION_STATE_CONNECTING
                 val client = Client(ENDPOINT)
                 if (sessionId == null) {
-                    updateRoom(client.joinOrCreate(GameState::class.java, "ffa"))
+                    updateRoom(client.joinOrCreate("ffa"))
                 } else {
-                    updateRoom(client.reconnect(GameState::class.java, roomId!!, sessionId!!))
+                    updateRoom(client.reconnect(roomId!!, sessionId!!))
                 }
                 if (room == null) {
                     delay(3000)
@@ -248,7 +264,7 @@ class GameScreen(val game: Game) : KtxScreen {
         }
     }
 
-    private fun updateRoom(room: Room<GameState>) {
+    private fun updateRoom(room: Room) {
         this.room = room
         roomId = room.id
         sessionId = room.sessionId
@@ -274,38 +290,68 @@ class GameScreen(val game: Game) : KtxScreen {
             currentPing = lastPingReplyTime - lastPingSentTime
             calculateLerp(currentPing.toFloat())
         }
-        room.state.players.onAdd = onAdd@{ player: Player?, key: String ->
+        (room.state["players"] as MapSchema<Schema>).onAdd = onAdd@{ player, key ->
             if (connectionState != CONNECTION_STATE_CONNECTED) return@onAdd
-            synchronized(players) { players.put(key, player!!) }
-            //            System.out.println("new player added >> clientId: " + key);
-            player!!.position.x = player.x
-            player.position.y = player.y
-            player._color = Color(player.color)
-            player._strokeColor = Color(player.color)
-            player._strokeColor?.mul(0.9f)
+            synchronized(players) {
+                players.put(key, Player().apply {
+                    position.x = player["x"] as Float
+                    position.y = player["y"] as Float
+                    _color = Color(player["color"] as Int)
+                    _strokeColor = Color(player["color"] as Int)
+                    _strokeColor?.mul(0.9f)
+                })
+            }
+            player.onChange = { changes ->
+                synchronized(players) {
+                    val p = players[key]!!
+                    for (change in changes) {
+                        when (change!!.field) {
+                            "x" -> p.x = change.value as Float
+                            "y" -> p.y = change.value as Float
+                            "radius" -> p.radius = change.value as Float
+                            "color" -> p.color = change.value as Int
+                        }
+                    }
+                }
+            }
         }
-        room.state.players.onRemove = label@{ player, key ->
+        (room.state["players"] as MapSchema<Schema>).onRemove = label@{ _, key ->
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             synchronized(players) { players.remove(key) }
         }
-        room.state.fruits.onAdd = label@{ fruit, key ->
-            if (fruit!!.key != key) {
-                println("WTF " + fruit.key + " != " + key)
+        (room.state["fruits"] as MapSchema<Schema>).onAdd = label@{ fruit, key ->
+            if (connectionState != CONNECTION_STATE_CONNECTED) return@label
+            if (fruit["key"] != key) {
+                println("WTF " + fruit["key"] + " != " + key)
             }
             println("fruit added: $key")
-            if (connectionState != CONNECTION_STATE_CONNECTED) return@label
-            synchronized(fruits) { fruits.put(key, fruit!!) }
-            //            System.out.println("new fruit added >> key: " + key);
-            fruit!!.position.x = fruit.x
-            fruit.position.y = fruit.y
-            fruit._color = Color(fruit.color)
-        }
-        room.state.fruits.onRemove = label@{ fruit, key ->
-            println("fruit removed: $key")
-            if (fruit!!.key != key) {
-                println("WTF " + fruit.key + " != " + key)
+            synchronized(fruits) {
+                fruits.put(key, Fruit().apply {
+                    position.x = fruit["x"] as Float
+                    position.y = fruit["y"] as Float
+                    _color = Color(fruit["color"] as Int)
+                })
             }
+            fruit.onChange = { changes ->
+                synchronized(fruits) {
+                    val f = fruits[key]!!
+                    for (change in changes) {
+                        when (change!!.field) {
+                            "key" -> f.key = change.value as String
+                            "x" -> f.x = change.value as Float
+                            "y" -> f.y = change.value as Float
+                            "color" -> f.color = change.value as Int
+                        }
+                    }
+                }
+            }
+        }
+        (room.state["fruits"] as MapSchema<Schema>).onRemove = label@{ fruit, key ->
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
+            println("fruit removed: $key")
+            if (fruit["key"] != key) {
+                println("WTF " + fruit["key"] + " != " + key)
+            }
             synchronized(fruits) { fruits.remove(key) }
         }
     }
