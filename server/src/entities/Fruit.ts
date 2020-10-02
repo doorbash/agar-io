@@ -12,6 +12,10 @@ class Fruit extends Schema {
 
     @type("int32")
     color: number;
+
+    angle = Math.PI * (Math.random() * 2 - 1);
+    init_x: number
+    init_y: number
 }
 
 export default Fruit;

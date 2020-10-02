@@ -19,6 +19,8 @@ class Constants {
     static PLAYER_MIN_SPEED = 40;
     static PLAYER_INIT_SPEED = 120;
     static PLAYER_INIT_RADIUS = 40;
+    static FRUITS_MOVEMENT_RANGE = 50
+    static FRUITS_MOVEMTNT_SPEED = 5
 }
 
 export default Constants;

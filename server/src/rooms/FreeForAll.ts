@@ -75,6 +75,19 @@ class FreeForAll extends Room {
     }
 
     updateWorld() {
+        this.state.fruits.forEach((fruit, key) => {
+            var newX = fruit.x + Math.cos(fruit.angle) * Constants.FRUITS_MOVEMTNT_SPEED * Constants.WORLD_UPDATE_INTERVAL / 1000;
+            var newY = fruit.y + Math.sin(fruit.angle) * Constants.FRUITS_MOVEMTNT_SPEED * Constants.WORLD_UPDATE_INTERVAL / 1000;
+            
+            if(Math.pow(newX - fruit.init_x, 2) + Math.pow(newY - fruit.init_y, 2) > Constants.FRUITS_MOVEMENT_RANGE * Constants.FRUITS_MOVEMENT_RANGE) {
+                fruit.angle = Math.PI * (Math.random() * 2 - 1);
+                return
+            }
+
+            fruit.x = newX;
+            fruit.y = newY;
+        });
+
         this.state.players.forEach((player, key) => {
             // update player position
             var newX = player.x + Math.cos(player.angle) * player.speed * Constants.WORLD_UPDATE_INTERVAL / 1000;
@@ -113,8 +126,8 @@ class FreeForAll extends Room {
 
     generateFruit() {
         var fr: Fruit = new Fruit();
-        fr.x = Constants.FRUIT_RADIUS + Math.random() * (1200 - 2 * Constants.FRUIT_RADIUS);
-        fr.y = Constants.FRUIT_RADIUS + Math.random() * (1200 - 2 * Constants.FRUIT_RADIUS);
+        fr.x = fr.init_x = Constants.FRUIT_RADIUS + Math.random() * (1200 - 2 * Constants.FRUIT_RADIUS);
+        fr.y = fr.init_y = Constants.FRUIT_RADIUS + Math.random() * (1200 - 2 * Constants.FRUIT_RADIUS);
         fr.color = Constants.FRUIT_COLORS[Math.floor(Math.random() * Constants.FRUIT_COLORS.length)];
         var key = "fr_" + (this.fruitId++);
         fr.key = key
