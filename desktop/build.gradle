@@ -4,7 +4,7 @@ sourceCompatibility = 1.8
 sourceSets.main.java.srcDirs = [ "src/" ]
 sourceSets.main.resources.srcDirs = ["../android/assets"]
 
-project.ext.mainClassName = "io.github.doorbash.agario.desktop.DesktopLauncher"
+project.ext.mainClassName = "io.github.doorbash.agario.desktop.DesktopLauncherKt"
 project.ext.assetsDir = new File("../android/assets")
 
 task run(dependsOn: classes, type: JavaExec) {

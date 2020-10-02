@@ -104,7 +104,7 @@ class FreeForAll extends Room {
 
     eat(player, fruitKey) {
         this.state.fruits.delete(fruitKey)
-        console.log("removed fruits[" + fruitKey + "] current size = " + this.state.fruits.siZe)
+        console.log("removed fruits[" + fruitKey + "] current size = " + this.state.fruits.size)
         player.radius += Constants.FRUIT_RADIUS / 10;
         var newSpeed = player.speed - Constants.FRUIT_RADIUS / 30;
         if (newSpeed > Constants.PLAYER_MIN_SPEED) player.speed = newSpeed;

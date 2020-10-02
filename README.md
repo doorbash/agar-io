@@ -1,4 +1,4 @@
-![preview.gif](https://github.com/doorbash/agar-io-ktx/blob/master/preview.gif?raw=true)
+<img src="https://github.com/doorbash/agar-io/blob/master/screenshot.png?raw=true" />
 
 ## Run
 1) Server :
@@ -10,7 +10,6 @@
 
 2) Client(s) :
 ```
-    cd client
     ./gradlew :desktop:run
 ```
 ## License
