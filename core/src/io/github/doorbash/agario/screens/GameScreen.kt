@@ -1,7 +1,7 @@
 package io.github.doorbash.agario.screens
 
-import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.PooledEngine
+import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import io.github.doorbash.agario.Game
@@ -11,6 +11,7 @@ import io.github.doorbash.agario.util.update
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
 import ktx.async.newSingleThreadAsyncContext
+import ktx.freetype.registerFreeTypeFontLoaders
 
 class GameScreen(
         val game: Game,
@@ -28,9 +29,12 @@ class GameScreen(
             addSystem(PLayersSystem(gameCamera))
             addSystem(FruitsSystem())
             addSystem(RenderSystem(gameCamera))
-            addSystem(GuiRenderSystem(batch, guiCamera))
+            addSystem(GuiRenderSystem(batch, guiCamera, assets))
             ConnectionManager.init(context, this)
         }
+    }
+    val assets: AssetManager by lazy {
+        AssetManager().apply { registerFreeTypeFontLoaders() }
     }
 
     override fun render(delta: Float) {
@@ -44,7 +48,7 @@ class GameScreen(
     }
 
     override fun dispose() {
-        engine.systems.forEach { engine.removeSystem(it) }
+        assets.dispose()
         engine.removeAllEntities()
         ConnectionManager.dispose()
     }

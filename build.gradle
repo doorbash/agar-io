@@ -123,6 +123,7 @@ project(":core") {
         api "io.github.libktx:ktx-log:$ktxVersion"
         api "io.github.libktx:ktx-math:$ktxVersion"
         api "io.github.libktx:ktx-async:$ktxVersion"
+        api "io.github.libktx:ktx-freetype:$ktxVersion"
 
         implementation 'io.github.doorbash:colyseus-kotlin:0.14.0-alpha.2'
     }

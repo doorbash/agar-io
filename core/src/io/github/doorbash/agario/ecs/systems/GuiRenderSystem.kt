@@ -3,13 +3,15 @@ package io.github.doorbash.agario.ecs.systems
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import io.github.doorbash.agario.helpers.ConnectionManager.currentPing
 import io.github.doorbash.agario.helpers.PATH_FONT_NOTO
+import ktx.assets.getValue
+import ktx.freetype.loadFreeTypeFont
 import ktx.graphics.use
 import ktx.log.logger
 
@@ -17,26 +19,18 @@ private val LOG = logger<RenderSystem>()
 
 class GuiRenderSystem(
         private val batch: SpriteBatch,
-        private val camera: OrthographicCamera
+        private val camera: OrthographicCamera,
+        private val assets: AssetManager
 ) : EntitySystem() {
 
-    private var freetypeGeneratorNoto: FreeTypeFontGenerator? = null
-    private var logFont: BitmapFont? = null
-
-    override fun addedToEngine(engine: Engine?) {
-        // TODO: use asset manager
-        freetypeGeneratorNoto = FreeTypeFontGenerator(Gdx.files.internal(PATH_FONT_NOTO))
-        val logFontParams = FreeTypeFontGenerator.FreeTypeFontParameter()
-        logFontParams.size = 14
-        logFontParams.color = Color.BLACK
-        logFontParams.flip = false
-        logFontParams.incremental = true
-        logFont = freetypeGeneratorNoto!!.generateFont(logFontParams)
+    val font: BitmapFont by assets.loadFreeTypeFont(PATH_FONT_NOTO) {
+        size = 14
+        color = Color.BLACK
+        incremental = true
     }
 
-    override fun removedFromEngine(engine: Engine?) {
-        freetypeGeneratorNoto?.dispose()
-        logFont?.dispose()
+    override fun addedToEngine(engine: Engine?) {
+        assets.finishLoadingAsset<BitmapFont>(PATH_FONT_NOTO)
     }
 
     override fun update(deltaTime: Float) {
@@ -50,7 +44,7 @@ class GuiRenderSystem(
         if (currentPing >= 0) {
             logText += " - ping: $currentPing"
         }
-        logFont!!.draw(batch, logText, -camera.viewportWidth / 2f + 8, -camera.viewportHeight / 2f + 2 + logFont!!.lineHeight)
+        font.draw(batch, logText, -camera.viewportWidth / 2f + 8, -camera.viewportHeight / 2f + 2 + font.lineHeight)
     }
 
 }
