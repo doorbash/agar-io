@@ -13,21 +13,17 @@ import ktx.graphics.use
 import ktx.log.debug
 import ktx.log.logger
 import ktx.math.vec3
-import org.kodein.di.DI
-import org.kodein.di.instance
 
 private val LOG = logger<RenderSystem>()
 
 class RenderSystem(
-        di: DI,
+        val camera: OrthographicCamera
 ) : SortedIteratingSystem(
         allOf(CircleComponent::class).get(),
         Comparator<Entity> { o1, o2 ->
             o1[CircleComponent.mapper]!!.radius.compareTo(o2[CircleComponent.mapper]!!.radius)
         }
 ) {
-
-    private val camera by di.instance<OrthographicCamera>("game")
 
     private var shapeRenderer: ShapeRenderer? = null
     private var cameraPosition = vec3()

@@ -12,19 +12,15 @@ import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.log.error
 import ktx.log.logger
-import org.kodein.di.DI
-import org.kodein.di.instance
 
 private val LOG = logger<PLayersSystem>()
 
 class PLayersSystem(
-        di: DI
+        val camera: OrthographicCamera,
+        val connectionManager: ConnectionManager
 ) : IteratingSystem(
         allOf(PlayerComponent::class).get()
 ) {
-
-    private val camera by di.instance<OrthographicCamera>("game")
-    private val connectionManager by di.instance<ConnectionManager>()
 
     override fun processEntity(entity: Entity, deltaTime: Float) {
         val player = entity[PlayerComponent.mapper]

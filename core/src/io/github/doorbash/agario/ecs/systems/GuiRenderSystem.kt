@@ -14,19 +14,15 @@ import ktx.assets.getValue
 import ktx.freetype.loadFreeTypeFont
 import ktx.graphics.use
 import ktx.log.logger
-import org.kodein.di.DI
-import org.kodein.di.instance
 
 private val LOG = logger<RenderSystem>()
 
 class GuiRenderSystem(
-        di: DI
+        val camera: OrthographicCamera,
+        val assets: AssetManager,
+        val batch: SpriteBatch,
+        val connectionManager: ConnectionManager
 ) : EntitySystem() {
-
-    private val assets by di.instance<AssetManager>()
-    private val batch by di.instance<SpriteBatch>()
-    private val camera by di.instance<OrthographicCamera>("gui")
-    private val connectionManager by di.instance<ConnectionManager>()
 
     val font: BitmapFont by assets.loadFreeTypeFont(PATH_FONT_NOTO) {
         size = 14

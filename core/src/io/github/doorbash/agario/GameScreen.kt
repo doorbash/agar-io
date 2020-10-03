@@ -10,13 +10,8 @@ import io.github.doorbash.agario.helpers.ConnectionManager
 import io.github.doorbash.agario.util.update
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
-import ktx.async.newSingleThreadAsyncContext
 import ktx.freetype.registerFreeTypeFontLoaders
-import org.kodein.di.DI
-import org.kodein.di.bind
-import org.kodein.di.eagerSingleton
-import org.kodein.di.instance
-import kotlin.coroutines.CoroutineContext
+import org.kodein.di.*
 
 class GameScreen(
         val game: Game,
@@ -24,33 +19,31 @@ class GameScreen(
 ) : KtxScreen {
 
     val di = DI {
-        bind<OrthographicCamera>("game") with instance(OrthographicCamera())
-        bind<OrthographicCamera>("gui") with instance(OrthographicCamera())
-        bind<Engine>() with instance(PooledEngine())
-        bind<SpriteBatch>() with instance(batch)
-        bind<CoroutineContext>() with instance(newSingleThreadAsyncContext())
-        bind<AssetManager>() with instance(AssetManager().apply { registerFreeTypeFontLoaders() })
-        bind<ConnectionManager>() with eagerSingleton { ConnectionManager() }
+        bind<OrthographicCamera>("game") with singleton { OrthographicCamera() }
+        bind<OrthographicCamera>("gui") with singleton { OrthographicCamera() }
+        bind<Engine>() with singleton { PooledEngine() }
+        bind<SpriteBatch>() with singleton { batch }
+        bind<AssetManager>() with singleton { AssetManager().apply { registerFreeTypeFontLoaders() } }
+        bind<ConnectionManager>() with singleton { ConnectionManager(instance()) }
     }
+    val did = di.direct
 
     val guiCamera by di.instance<OrthographicCamera>("gui")
     val gameCamera by di.instance<OrthographicCamera>("game")
-    val context by di.instance<CoroutineContext>()
     val engine by di.instance<Engine>()
     val assets by di.instance<AssetManager>()
     val connectionManager by di.instance<ConnectionManager>()
 
     init {
         engine.run {
-            addSystem(ConnectionCheckIntervalSystem(di))
-            addSystem(PingIntervalSystem(di))
-            addSystem(InputIntervalSystem(di))
-            addSystem(PLayersSystem(di))
+            addSystem(ConnectionCheckIntervalSystem(did.instance()))
+            addSystem(PingIntervalSystem(did.instance()))
+            addSystem(InputIntervalSystem(did.instance("game"), did.instance()))
+            addSystem(PLayersSystem(did.instance("game"), did.instance()))
             addSystem(FruitsSystem())
-            addSystem(RenderSystem(di))
-            addSystem(GuiRenderSystem(di))
+            addSystem(RenderSystem(did.instance("game")))
+            addSystem(GuiRenderSystem(did.instance("gui"), did.instance(), did.instance(), did.instance()))
         }
-        connectionManager.init(context, engine)
     }
 
     override fun render(delta: Float) {
