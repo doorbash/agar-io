@@ -3,7 +3,6 @@ package io.github.doorbash.agario
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.PooledEngine
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import io.github.doorbash.agario.ecs.systems.*
@@ -66,6 +65,7 @@ class GameScreen(
 
     override fun dispose() {
         assets.dispose()
+        engine.systems.forEach { engine.removeSystem(it) }
         engine.removeAllEntities()
         connectionManager.dispose()
     }
