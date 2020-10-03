@@ -12,14 +12,19 @@ import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.log.error
 import ktx.log.logger
+import org.kodein.di.DI
+import org.kodein.di.instance
 
 private val LOG = logger<PLayersSystem>()
 
 class PLayersSystem(
-        private val camera: OrthographicCamera
+        di: DI
 ) : IteratingSystem(
         allOf(PlayerComponent::class).get()
 ) {
+
+    private val camera by di.instance<OrthographicCamera>("game")
+    private val connectionManager by di.instance<ConnectionManager>()
 
     override fun processEntity(entity: Entity, deltaTime: Float) {
         val player = entity[PlayerComponent.mapper]
@@ -39,10 +44,10 @@ class PLayersSystem(
 
         with(player.player!!) {
             circle.radius = radius
-            if (player.clientId == ConnectionManager.sessionId) {
+            if (player.clientId == connectionManager.sessionId) {
                 circle.position.set(
-                        MathUtils.lerp(circle.position.x, x, ConnectionManager.lerp
-                        ), MathUtils.lerp(circle.position.y, y, ConnectionManager.lerp))
+                        MathUtils.lerp(circle.position.x, x, connectionManager.lerp
+                        ), MathUtils.lerp(circle.position.y, y, connectionManager.lerp))
 
                 camera.position.x = circle.position.x
                 camera.position.y = circle.position.y

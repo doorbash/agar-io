@@ -16,12 +16,16 @@ import ktx.graphics.use
 import ktx.log.debug
 import ktx.log.logger
 import ktx.math.vec3
+import org.kodein.di.DI
+import org.kodein.di.instance
 
 private val LOG = logger<RenderSystem>()
 
 class RenderSystem(
-        private val camera: OrthographicCamera,
+        di: DI,
 ) : IteratingSystem(allOf(CircleComponent::class).get()) {
+
+    private val camera by di.instance<OrthographicCamera>("game")
 
     private var shapeRenderer: ShapeRenderer? = null
     private var cameraPosition = vec3()

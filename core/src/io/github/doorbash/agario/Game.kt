@@ -3,7 +3,6 @@ package io.github.doorbash.agario
 import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import io.github.doorbash.agario.screens.GameScreen
 import ktx.app.KtxGame
 import ktx.app.KtxScreen
 import ktx.async.KtxAsync

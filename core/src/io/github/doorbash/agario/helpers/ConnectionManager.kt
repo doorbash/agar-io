@@ -13,6 +13,8 @@ import ktx.async.KtxAsync
 import ktx.log.Logger
 import ktx.log.debug
 import ktx.log.error
+import org.kodein.di.DI
+import org.kodein.di.instance
 import kotlin.coroutines.CoroutineContext
 
 private val LOG = Logger("ConnectionManager")
@@ -23,7 +25,7 @@ enum class ConnectionState {
     CONNECTION_STATE_CONNECTED
 }
 
-object ConnectionManager {
+class ConnectionManager {
     val client = Client(ENDPOINT)
     var context: CoroutineContext? = null
     var engine: Engine? = null
