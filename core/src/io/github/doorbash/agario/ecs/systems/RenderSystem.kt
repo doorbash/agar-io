@@ -2,12 +2,11 @@ package io.github.doorbash.agario.ecs.systems
 
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.systems.IteratingSystem
+import com.badlogic.ashley.systems.SortedIteratingSystem
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import io.github.doorbash.agario.ecs.components.CircleComponent
 import io.github.doorbash.agario.ecs.components.FruitComponent
-import io.github.doorbash.agario.ecs.components.PlayerComponent
 import io.github.doorbash.agario.helpers.PLAYERS_STROKE_THICKNESS
 import ktx.ashley.allOf
 import ktx.ashley.get
@@ -23,7 +22,12 @@ private val LOG = logger<RenderSystem>()
 
 class RenderSystem(
         di: DI,
-) : IteratingSystem(allOf(CircleComponent::class).get()) {
+) : SortedIteratingSystem(
+        allOf(CircleComponent::class).get(),
+        Comparator<Entity> { o1, o2 ->
+            o1[CircleComponent.mapper]!!.radius.compareTo(o2[CircleComponent.mapper]!!.radius)
+        }
+) {
 
     private val camera by di.instance<OrthographicCamera>("game")
 
@@ -61,7 +65,7 @@ class RenderSystem(
         }
 
         with(shapeRenderer!!) {
-            if (entity.has(PlayerComponent.mapper)) {
+            if (circle.strokeColor != 0) {
                 color.set(circle.strokeColor)
                 circle(circle.position.x, circle.position.y, circle.radius)
                 color.set(circle.color)
