@@ -51,6 +51,7 @@ class ConnectionManager(
                 updateRoom(room!!)
             } catch (e: Exception) {
                 connectionState = CONNECTION_STATE_DISCONNECTED
+                room = null
                 LOG.error(e) { "error while connecting to room $ROOM_NAME" }
             }
         }
@@ -67,10 +68,12 @@ class ConnectionManager(
             if (code > 1000) {
                 // abnormal disconnection!
                 connectionState = CONNECTION_STATE_DISCONNECTED
+                this.room = null
             }
         }
         room.onError = { code, message ->
             connectionState = CONNECTION_STATE_DISCONNECTED
+            this.room = null
             LOG.error { "onError($code, $message)" }
         }
         room.onMessage("ping") { message: String ->
@@ -109,11 +112,13 @@ class ConnectionManager(
     }
 
     fun sendPing() {
+        if (room == null) return
         KtxAsync.launch(context) { room?.send("ping", "pong") }
         lastPingSentTime = System.currentTimeMillis()
     }
 
     fun sendAngle(angle: Int) {
+        if (room == null) return
         KtxAsync.launch(context) { room?.send("angle", angle) }
     }
 
