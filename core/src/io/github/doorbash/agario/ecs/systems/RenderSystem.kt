@@ -6,11 +6,9 @@ import com.badlogic.ashley.systems.SortedIteratingSystem
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import io.github.doorbash.agario.ecs.components.CircleComponent
-import io.github.doorbash.agario.ecs.components.FruitComponent
 import io.github.doorbash.agario.helpers.PLAYERS_STROKE_THICKNESS
 import ktx.ashley.allOf
 import ktx.ashley.get
-import ktx.ashley.has
 import ktx.graphics.use
 import ktx.log.debug
 import ktx.log.logger
@@ -70,7 +68,7 @@ class RenderSystem(
                 circle(circle.position.x, circle.position.y, circle.radius)
                 color.set(circle.color)
                 circle(circle.position.x, circle.position.y, circle.radius - PLAYERS_STROKE_THICKNESS)
-            } else if (entity.has(FruitComponent.mapper)) {
+            } else {
                 color.set(circle.color)
                 circle(circle.position.x, circle.position.y, circle.radius)
             }
