@@ -2,6 +2,7 @@ package io.github.doorbash.agario.helpers
 
 import com.badlogic.ashley.core.Engine
 import io.colyseus.Client
+import io.colyseus.Client.MatchMakeException
 import io.colyseus.Room
 import io.github.doorbash.agario.classes.GameState
 import io.github.doorbash.agario.ecs.createFruit
@@ -44,9 +45,13 @@ class ConnectionManager(
                 connectionState = CONNECTION_STATE_CONNECTED
                 updateRoom(room!!)
             } catch (e: Exception) {
+                if (e is MatchMakeException) sessionId = null
                 connectionState = CONNECTION_STATE_DISCONNECTED
                 room = null
                 LOG.error(e) { "error while connecting to room $ROOM_NAME" }
+                KtxAsync.launch {
+                    engine.removeAllEntities()
+                }
             }
         }
     }
@@ -103,7 +108,6 @@ class ConnectionManager(
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             KtxAsync.launch {
                 try {
-//                    LOG.debug { "thread: " + Thread.currentThread().name }
                     engine.removeEntity(fruit.entity)
                 } catch (e: Exception) {
                 }

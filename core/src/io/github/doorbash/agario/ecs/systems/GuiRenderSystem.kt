@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import io.github.doorbash.agario.helpers.ConnectionManager
+import io.github.doorbash.agario.helpers.ConnectionState
 import io.github.doorbash.agario.helpers.PATH_FONT_NOTO
 import ktx.assets.getValue
 import ktx.freetype.loadFreeTypeFont
@@ -36,7 +37,10 @@ class GuiRenderSystem(
 
     override fun update(deltaTime: Float) {
         batch.use(camera.combined) {
-            drawPing()
+            if (connectionManager.connectionState == ConnectionState.CONNECTION_STATE_CONNECTED)
+                drawPing()
+            else
+                drawConnecting()
         }
     }
 
@@ -48,4 +52,7 @@ class GuiRenderSystem(
         font.draw(batch, logText, -camera.viewportWidth / 2f + 8, -camera.viewportHeight / 2f + 2 + font.lineHeight)
     }
 
+    private fun drawConnecting() {
+        font.draw(batch, "Connecting...", -camera.viewportWidth / 2f + 8, -camera.viewportHeight / 2f + 2 + font.lineHeight)
+    }
 }
