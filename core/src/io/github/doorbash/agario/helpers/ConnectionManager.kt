@@ -7,7 +7,6 @@ import io.github.doorbash.agario.classes.GameState
 import io.github.doorbash.agario.ecs.createFruit
 import io.github.doorbash.agario.ecs.createPlayer
 import io.github.doorbash.agario.helpers.ConnectionState.*
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import ktx.async.KtxAsync
 import ktx.log.debug
@@ -33,14 +32,12 @@ class ConnectionManager(
     var lastPingReplyTime = 0L
     var currentPing = -1L
     var lerp = LERP_MAX
-    var connectionJob: Job? = null
 
     fun connectIfNeeded() {
         if (connectionState != CONNECTION_STATE_DISCONNECTED) return
         connectionState = CONNECTION_STATE_CONNECTING
 
-        connectionJob?.cancel()
-        connectionJob = KtxAsync.launch {
+        KtxAsync.launch {
             try {
                 if (sessionId == null) room = client.joinOrCreate(GameState::class.java, ROOM_NAME)
                 else room = client.reconnect(GameState::class.java, ROOM_NAME, sessionId!!)
@@ -106,6 +103,7 @@ class ConnectionManager(
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             KtxAsync.launch {
                 try {
+//                    LOG.debug { "thread: " + Thread.currentThread().name }
                     engine.removeEntity(fruit.entity)
                 } catch (e: Exception) {
                 }
@@ -134,7 +132,6 @@ class ConnectionManager(
     }
 
     fun dispose() {
-        connectionJob?.cancel()
         room?.leave()
     }
 }
