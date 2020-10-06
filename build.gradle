@@ -30,7 +30,7 @@ allprojects {
         aiVersion = '1.8.0'
         ktxVersion = '1.9.10-b7'
         ashleyVersion = '1.7.3'
-        colyseusVersion = '0.14.0-alpha.8'
+        colyseusVersion = '0.14.0-alpha.9'
         kodeinVersion = '7.1.0'
     }
 
