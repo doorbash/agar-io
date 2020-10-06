@@ -131,7 +131,7 @@ project(":core") {
         api "io.github.libktx:ktx-async:$ktxVersion"
         api "io.github.libktx:ktx-freetype:$ktxVersion"
 
-        implementation 'io.github.doorbash:colyseus-kotlin:0.14.0-alpha.2'
+        implementation 'io.github.doorbash:colyseus-kotlin:0.14.0-alpha.6'
 
         implementation 'org.kodein.di:kodein-di:7.1.0'
     }

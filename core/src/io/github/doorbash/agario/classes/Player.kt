@@ -2,7 +2,7 @@ package io.github.doorbash.agario.classes
 
 import com.badlogic.ashley.core.Entity
 import io.colyseus.annotations.SchemaField
-import io.colyseus.default
+import io.colyseus.util.default
 import io.colyseus.serializer.schema.Schema
 
 class Player : Schema() {
