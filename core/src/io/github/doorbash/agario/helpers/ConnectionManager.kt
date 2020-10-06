@@ -80,22 +80,36 @@ class ConnectionManager(
         }
         room.state.players.onAdd = label@{ player, key ->
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
-            engine.createPlayer(player, key)
+            KtxAsync.launch {
+                engine.createPlayer(player, key)
+            }
         }
         room.state.players.onRemove = label@{ player, key ->
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
-            engine.removeEntity(player.entity)
+            KtxAsync.launch {
+                try {
+                    engine.removeEntity(player.entity)
+                } catch (e: Exception) {
+                }
+            }
         }
         room.state.fruits.onAdd = label@{ fruit, key ->
             LOG.debug { "fruit added: $key" }
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
-            engine.createFruit(fruit)
+            KtxAsync.launch {
+                engine.createFruit(fruit)
+            }
         }
         room.state.fruits.onRemove = label@{ fruit, key ->
             LOG.debug { "fruit removed: $key" }
             if (fruit.key != key) LOG.error { ("WTF ${fruit.key} != $key") }
             if (connectionState != CONNECTION_STATE_CONNECTED) return@label
-            engine.removeEntity(fruit.entity)
+            KtxAsync.launch {
+                try {
+                    engine.removeEntity(fruit.entity)
+                } catch (e: Exception) {
+                }
+            }
         }
     }
 
