@@ -10,13 +10,11 @@ import io.github.doorbash.agario.helpers.ConnectionState.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import ktx.async.KtxAsync
-import ktx.async.newSingleThreadAsyncContext
-import ktx.log.Logger
 import ktx.log.debug
 import ktx.log.error
-import kotlin.coroutines.CoroutineContext
+import ktx.log.logger
 
-private val LOG = Logger("ConnectionManager")
+private val LOG = logger<ConnectionManager>()
 
 enum class ConnectionState {
     CONNECTION_STATE_DISCONNECTED,
@@ -29,7 +27,6 @@ class ConnectionManager(
 ) {
     val client = Client(ENDPOINT)
     var connectionState: ConnectionState = CONNECTION_STATE_DISCONNECTED
-    val context: CoroutineContext = newSingleThreadAsyncContext()
     var sessionId: String? = null
     var room: Room<GameState>? = null
     var lastPingSentTime = 0L
@@ -43,7 +40,7 @@ class ConnectionManager(
         connectionState = CONNECTION_STATE_CONNECTING
 
         connectionJob?.cancel()
-        connectionJob = KtxAsync.launch(context) {
+        connectionJob = KtxAsync.launch {
             try {
                 if (sessionId == null) room = client.joinOrCreate(GameState::class.java, ROOM_NAME)
                 else room = client.reconnect(GameState::class.java, ROOM_NAME, sessionId!!)
@@ -81,8 +78,8 @@ class ConnectionManager(
             currentPing = lastPingReplyTime - lastPingSentTime
             calculateLerp(currentPing.toFloat())
         }
-        room.state.players.onAdd = onAdd@{ player, key ->
-            if (connectionState != CONNECTION_STATE_CONNECTED) return@onAdd
+        room.state.players.onAdd = label@{ player, key ->
+            if (connectionState != CONNECTION_STATE_CONNECTED) return@label
             engine.createPlayer(player, key)
         }
         room.state.players.onRemove = label@{ player, key ->
@@ -113,13 +110,13 @@ class ConnectionManager(
 
     fun sendPing() {
         if (room == null) return
-        KtxAsync.launch(context) { room?.send("ping", "pong") }
+        room?.send("ping", "pong")
         lastPingSentTime = System.currentTimeMillis()
     }
 
     fun sendAngle(angle: Int) {
         if (room == null) return
-        KtxAsync.launch(context) { room?.send("angle", angle) }
+        room?.send("angle", angle)
     }
 
     fun dispose() {
