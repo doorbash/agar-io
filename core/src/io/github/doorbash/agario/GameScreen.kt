@@ -10,7 +10,9 @@ import io.github.doorbash.agario.helpers.ConnectionManager
 import io.github.doorbash.agario.util.update
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
-import ktx.freetype.registerFreeTypeFontLoaders
+import ktx.assets.async.AssetStorage
+import ktx.async.KtxAsync
+import ktx.freetype.async.registerFreeTypeFontLoaders
 import org.kodein.di.*
 
 class GameScreen(
@@ -23,7 +25,7 @@ class GameScreen(
         bind<OrthographicCamera>("gui") with singleton { OrthographicCamera() }
         bind<Engine>() with singleton { PooledEngine() }
         bind<SpriteBatch>() with singleton { batch }
-        bind<AssetManager>() with singleton { AssetManager().apply { registerFreeTypeFontLoaders() } }
+        bind<AssetStorage>() with singleton { AssetStorage().apply { KtxAsync.initiate(); registerFreeTypeFontLoaders() } }
         bind<ConnectionManager>() with singleton { ConnectionManager(instance()) }
     }
     val did = di.direct
@@ -31,7 +33,7 @@ class GameScreen(
     val guiCamera by di.instance<OrthographicCamera>("gui")
     val gameCamera by di.instance<OrthographicCamera>("game")
     val engine by di.instance<Engine>()
-    val assets by di.instance<AssetManager>()
+    val assets by di.instance<AssetStorage>()
     val connectionManager by di.instance<ConnectionManager>()
 
     init {
