@@ -49,9 +49,7 @@ class ConnectionManager(
                 connectionState = CONNECTION_STATE_DISCONNECTED
                 room = null
                 LOG.error(e) { "error while connecting to room $ROOM_NAME" }
-                KtxAsync.launch {
-                    engine.removeAllEntities()
-                }
+                engine.removeAllEntities()
             }
         }
     }
